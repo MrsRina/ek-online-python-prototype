@@ -9,7 +9,7 @@
 #		label = cocos.text.Label(text = "Holy World", font_name = "Tahoma", font_size = 18);
 #		label.position = (400, 400);
 
-#		for x in range(0, 1):
+#		for x in range(0, 200):
 #			self.add(label);
 
 #	def mainloop(self):

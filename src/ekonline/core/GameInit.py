@@ -50,21 +50,40 @@ except:
 	log("SDL not found.");
 
 from ekonline.core.GameGUI import GuiManager;
+from ekonline.render.Camera import Matrix;
+from ekonline.core.GameInput import DigitalUIControllerManager;
+
+log("System game imports.");
+
+from ekonline.core import SurfaceBufferRender;
+log("Surface Buffer Render (SBR) imported.");
 
 pygame.mixer.quit();
 
 window = pygame.display.set_mode((480, 240), pygame.DOUBLEBUF);
-
 pygame.display.set_caption(CLIENT_NAME + " " + str(CLIENT_VERSION));
+
+# Make global some classes.
+global game, game_gui_manager, game_camera_matrix, game_entity_render_manager, game_digital_ui_controller_manager;
 
 # Init ALl classes of the game.
 game = EKOnline(window);
 game_gui_manager = GuiManager(window);
+game_camera_matrix = Matrix();
+game_digital_ui_controller_manager = DigitalUIControllerManager(window);
 
-log("Game GUI initialized.");
+log("Game managers initialized.");
 
 # Update ALL main variables of the game.
 game.gui_manager = game_gui_manager;
+game.camera = game_camera_matrix;
+
+log("Loading default digital input.");
+game.digital_ui_controller = game_digital_ui_controller_manager;
+
+# Prepare.
+game_gui_manager.prepare();
+game.prepare();
 
 # Create main variables.
 partial_ticks = 1;
@@ -77,10 +96,12 @@ while 1:
 		if event.type == pygame.MOUSEBUTTONUP:
 			game.on_touch_detected(event.pos[0], event.pos[1]);
 			game_gui_manager.on_touch_detected(event.pos[0], event.pos[1]);
+			game_digital_ui_controller_manager.on_touch_detected(event.pos[0], event.pos[1]);
 		
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			game.on_touch_released(event.pos[0], event.pos[1]);
 			game_gui_manager.on_touch_released(event.pos[0], event.pos[1]);
+			game_digital_ui_controller_manager.on_touch_released(event.pos[0], event.pos[1]);
 
 		if event.type == pygame.QUIT:
 			game.on_shutdown();
@@ -93,6 +114,11 @@ while 1:
 	window.fill((0, 0, 0));
 
 	game.on_update(partial_ticks);
-	game.on_render(partial_ticks);
 
+	game_gui_manager.on_render(partial_ticks);
+	game_camera_matrix.on_render(partial_ticks);
+	game.on_render(partial_ticks);
+	game_digital_ui_controller_manager.on_render();
+
+	SurfaceBufferRender.debug();
 	pygame.display.flip();
